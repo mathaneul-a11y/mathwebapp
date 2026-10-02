@@ -1,0 +1,66 @@
+/* ==========================================================================
+   수업용 피타고라스 & 두 점 사이의 거리 스타일시트
+   ========================================================================== */
+
+/* 기본 폰트 스무딩(부드러운 글꼴 표현) 적용 */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 캔버스 컨테이너 및 캔버스 기본 설정 */
+#canvasContainer {
+  touch-action: none; /* 모바일/아이패드에서 드래그 중 화면 스크롤 방지 */
+  user-select: none;   /* 텍스트 드래그 선택 방지 */
+  -webkit-user-select: none;
+}
+
+#mathCanvas {
+  touch-action: none;
+  display: block;
+}
+
+/* 캔버스 마우스 커서 상태 스타일 */
+#mathCanvas.cursor-grab {
+  cursor: grab;
+}
+
+#mathCanvas.cursor-grabbing {
+  cursor: grabbing;
+}
+
+#mathCanvas.cursor-pointer {
+  cursor: pointer;
+}
+
+/* 프리셋 버튼 클릭 시 살짝 눌리는 피드백 효과 */
+.preset-btn:active {
+  transform: translateY(1px);
+}
+
+/* 질문 아코디언 열림/닫힘 애니메이션 */
+.accordion-content {
+  transition: all 0.3s ease-in-out;
+}
+
+/* 아코디언 화살표 회전 */
+.chevron.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* 질문 카드 호버 시 부드러운 강조 */
+.question-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.question-card:hover {
+  box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.08);
+}
+
+/* 모바일 화면을 위한 미세 조정 */
+@media (max-width: 640px) {
+  #canvasContainer {
+    aspect-ratio: 1 / 1; /* 모바일 화면에서는 정사각 비율로 더 넓게 보이도록 설정 */
+    min-height: 320px;
+  }
+}

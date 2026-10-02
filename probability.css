@@ -1,0 +1,303 @@
+/* ========================================================
+   스타일시트: style.css
+   수학 수업용 동전 던지기 및 대수의 법칙 인터랙션 스타일
+   ======================================================== */
+
+/* 동전 컨테이너: 3차원 원근감(Perspective)을 부여하여 입체감 있는 회전 구현 */
+.coin-container {
+  width: 120px;
+  height: 120px;
+  perspective: 1000px; /* 3차원 원근 효과 (입체감 깊이) */
+  margin: 0 auto;
+}
+
+/* 동전 본체: 앞면과 뒷면을 감싸고 3D 회전(Transform)을 수행 */
+.coin {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d; /* 자식 요소들의 3차원 공간 유지 */
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 부드럽게 튕기는 탄성 애니메이션 */
+  cursor: pointer;
+}
+
+/* 동전의 각 면(앞면, 뒷면) 공통 디자인 */
+.coin-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%; /* 둥근 원형 */
+  backface-visibility: hidden; /* 뒷면일 때 화면에서 숨김 처리 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px -4px rgba(217, 119, 6, 0.3), inset 0 -4px 6px rgba(0, 0, 0, 0.15), inset 0 4px 6px rgba(255, 255, 255, 0.6);
+  border: 4px solid #f59e0b; /* 황금빛 테두리 */
+  background: radial-gradient(circle at 35% 35%, #fef3c7, #fde68a 40%, #f59e0b 80%, #d97706 100%);
+  user-select: none;
+}
+
+/* 앞면 (Head) 설정: 기본 회전 각도 0도 */
+.coin-front {
+  transform: rotateY(0deg);
+}
+
+/* 뒷면 (Tail) 설정: 뒤집힌 상태 180도 회전 */
+.coin-back {
+  transform: rotateY(180deg);
+}
+
+/* 1회 던지기 애니메이션 상태 클래스 */
+.coin.flipping {
+  animation: coinSpin 0.7s ease-out forwards;
+}
+
+/* 회전 키프레임 애니메이션: 공중에 붕 떴다가 착지하는 효과 */
+@keyframes coinSpin {
+  0% {
+    transform: translateY(0) rotateY(0deg) scale(1);
+  }
+  40% {
+    transform: translateY(-40px) rotateY(720deg) scale(1.15); /* 위로 솟구치며 빠르게 회전 */
+  }
+  100% {
+    transform: translateY(0) rotateY(1440deg) scale(1); /* 원래 위치로 착지 */
+  }
+}
+
+/* 최근 결과 기록 칩(History Chip) 배지 스타일 */
+.history-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.2s ease-in-out;
+  animation: popIn 0.25s ease-out;
+}
+
+.history-chip.head {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1.5px solid #f59e0b;
+}
+
+.history-chip.tail {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1.5px solid #cbd5e1;
+}
+
+/* 등장 애니메이션 (통통 튀어오름) */
+@keyframes popIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 모바일 및 터치 디바이스 최적화 */
+@media (max-width: 640px) {
+  .coin-container {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+/* ========================================================
+   주사위(Dice) 3차원 스타일 및 구르는 애니메이션
+   ======================================================== */
+
+/* 주사위 씬(Scene): 3차원 원근감(Perspective)을 주어 입체 공간 생성 */
+.dice-scene {
+  width: 100px;
+  height: 100px;
+  perspective: 800px; /* 3차원 원근 거리 (원근감 깊이) */
+  margin: 10px auto 25px auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 주사위 큐브 본체: 정육면체 3D 공간 보존 및 부드러운 회전 제어 */
+.dice {
+  width: 90px;
+  height: 90px;
+  position: relative;
+  transform-style: preserve-3d; /* 자식 요소들의 3차원 공간 유지 */
+  transition: transform 0.6s cubic-bezier(0.2, 0.85, 0.4, 1.2); /* 굴림 후 착지할 때 쫀득한 감속 */
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 주사위 6개 면 공통 스타일 */
+.dice-face {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px; /* 모서리가 둥근 정육면체 */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.08);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* 주사위 눈금 점(Dot / Pip) 디자인 */
+.dice-face .dot {
+  width: 14px;
+  height: 14px;
+  background-color: #334155; /* 짙은 차콜 슬레이트 색상 */
+  border-radius: 50%; /* 둥근 점 */
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(255, 255, 255, 0.8);
+  align-self: center;
+  justify-self: center;
+}
+
+/* 1번 면의 중앙 점은 눈에 띄게 큰 붉은색 점으로 시인성 강화 (전통 주사위 양식) */
+.dice-face.face-1 .dot {
+  width: 22px;
+  height: 22px;
+  background-color: #ef4444; /* 선명한 레드 */
+  box-shadow: inset 0 2px 4px rgba(185, 28, 28, 0.6), 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* 각 면(Face)의 3D 공간 배치 (주사위 크기 90px의 절반인 45px만큼 축 이동) */
+/* 1번 면 (앞면, 앞쪽으로 45px) */
+.dice-face.face-1 { transform: rotateY(0deg) translateZ(45px); }
+/* 6번 면 (뒷면, 180도 뒤로 회전 후 45px) - 마주보는 면(1+6=7) */
+.dice-face.face-6 { transform: rotateY(180deg) translateZ(45px); }
+/* 2번 면 (오른쪽 면, Y축 90도 회전 후 45px) */
+.dice-face.face-2 { transform: rotateY(90deg) translateZ(45px); }
+/* 5번 면 (왼쪽 면, Y축 -90도 회전 후 45px) - 마주보는 면(2+5=7) */
+.dice-face.face-5 { transform: rotateY(-90deg) translateZ(45px); }
+/* 3번 면 (윗면, X축 90도 회전 후 45px) */
+.dice-face.face-3 { transform: rotateX(90deg) translateZ(45px); }
+/* 4번 면 (아랫면, X축 -90도 회전 후 45px) - 마주보는 면(3+4=7) */
+.dice-face.face-4 { transform: rotateX(-90deg) translateZ(45px); }
+
+/* 주사위 각 면 점(Dot)들의 Grid 3x3 격자 배치 */
+/* 1번 면: 정중앙 (2행 2열) */
+.face-1 .dot:nth-child(1) { grid-column: 2; grid-row: 2; }
+
+/* 2번 면: 대각선 2개 (1행1열, 3행3열) */
+.face-2 .dot:nth-child(1) { grid-column: 1; grid-row: 1; }
+.face-2 .dot:nth-child(2) { grid-column: 3; grid-row: 3; }
+
+/* 3번 면: 대각선 3개 (1행1열, 2행2열, 3행3열) */
+.face-3 .dot:nth-child(1) { grid-column: 1; grid-row: 1; }
+.face-3 .dot:nth-child(2) { grid-column: 2; grid-row: 2; }
+.face-3 .dot:nth-child(3) { grid-column: 3; grid-row: 3; }
+
+/* 4번 면: 모서리 4개 (1행1열, 1행3열, 3행1열, 3행3열) */
+.face-4 .dot:nth-child(1) { grid-column: 1; grid-row: 1; }
+.face-4 .dot:nth-child(2) { grid-column: 3; grid-row: 1; }
+.face-4 .dot:nth-child(3) { grid-column: 1; grid-row: 3; }
+.face-4 .dot:nth-child(4) { grid-column: 3; grid-row: 3; }
+
+/* 5번 면: 4개 모서리 + 중앙 1개 */
+.face-5 .dot:nth-child(1) { grid-column: 1; grid-row: 1; }
+.face-5 .dot:nth-child(2) { grid-column: 3; grid-row: 1; }
+.face-5 .dot:nth-child(3) { grid-column: 2; grid-row: 2; }
+.face-5 .dot:nth-child(4) { grid-column: 1; grid-row: 3; }
+.face-5 .dot:nth-child(5) { grid-column: 3; grid-row: 3; }
+
+/* 6번 면: 양쪽 열 3개씩 나란히 6개 */
+.face-6 .dot:nth-child(1) { grid-column: 1; grid-row: 1; }
+.face-6 .dot:nth-child(2) { grid-column: 1; grid-row: 2; }
+.face-6 .dot:nth-child(3) { grid-column: 1; grid-row: 3; }
+.face-6 .dot:nth-child(4) { grid-column: 3; grid-row: 1; }
+.face-6 .dot:nth-child(5) { grid-column: 3; grid-row: 2; }
+.face-6 .dot:nth-child(6) { grid-column: 3; grid-row: 3; }
+
+/* 주사위 바닥 그림자 (입체감 보조 효과) */
+.dice-shadow {
+  position: absolute;
+  bottom: -15px;
+  width: 70px;
+  height: 16px;
+  background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.28) 0%, rgba(15, 23, 42, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+/* 주사위가 공중에 붕 뜨며 회전하는 애니메이션 상태 */
+.dice.rolling {
+  animation: diceRollAnimation 0.85s ease-out forwards;
+}
+
+/* 주사위 구를 때 바닥 그림자 크기 축소 애니메이션 */
+.dice.rolling ~ .dice-shadow {
+  animation: diceShadowAnimation 0.85s ease-out forwards;
+}
+
+/* 주사위 구르는 역동적 3D 키프레임 애니메이션 */
+@keyframes diceRollAnimation {
+  0% {
+    transform: translateY(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+  20% {
+    transform: translateY(-55px) rotateX(240deg) rotateY(180deg) rotateZ(90deg) scale(1.15); /* 붕 솟구침 */
+  }
+  45% {
+    transform: translateY(-25px) rotateX(600deg) rotateY(480deg) rotateZ(240deg) scale(1.05); /* 공중 회전 */
+  }
+  70% {
+    transform: translateY(-40px) rotateX(960deg) rotateY(720deg) rotateZ(420deg) scale(1.1); /* 두 번째 튕김 */
+  }
+  90% {
+    transform: translateY(-5px) rotateX(1260deg) rotateY(960deg) rotateZ(600deg) scale(1.02); /* 바닥 접근 */
+  }
+  100% {
+    transform: translateY(0) rotateX(1440deg) rotateY(1080deg) rotateZ(720deg) scale(1); /* 착지 직전 */
+  }
+}
+
+/* 바닥 그림자 크기 변화 애니메이션 */
+@keyframes diceShadowAnimation {
+  0% { transform: scale(1); opacity: 0.8; }
+  20% { transform: scale(0.45); opacity: 0.25; }
+  45% { transform: scale(0.75); opacity: 0.5; }
+  70% { transform: scale(0.55); opacity: 0.35; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* 주사위 기록 칩(History Chip) 배지 스타일 */
+.dice-history-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  animation: popIn 0.25s ease-out;
+}
+
+.dice-history-chip.num-1 {
+  color: #ef4444;
+  border-color: #fca5a5;
+  background-color: #fef2f2;
+}
+
