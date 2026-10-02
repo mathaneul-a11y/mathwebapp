@@ -115,7 +115,7 @@
         <div class="mt-8 grid grid-cols-3 gap-3 sm:gap-6 max-w-xl mx-auto text-left">
           <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/90 shadow-sm">
             <div class="text-xs font-medium text-slate-500">탐구 가능 수업</div>
-            <div class="text-xl sm:text-2xl font-bold text-brand-600 mt-1">2개 <span class="text-xs font-normal text-slate-400">(+업데이트중)</span></div>
+            <div class="text-xl sm:text-2xl font-bold text-brand-600 mt-1">3개 <span class="text-xs font-normal text-slate-400">(정규분포 추가됨)</span></div>
           </div>
           <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/90 shadow-sm">
             <div class="text-xs font-medium text-slate-500">대상 학년</div>
@@ -270,13 +270,66 @@
         </div>
       </article>
 
-      <!-- [카드 3: 준비중 카드] -->
-      <article data-category="geom stat" class="lesson-card relative bg-slate-50/80 rounded-2xl border border-dashed border-slate-300 shadow-sm flex flex-col overflow-hidden">
+      <!-- [카드 3: 정규분포와 표준편차] -->
+      <article data-category="stat available" class="lesson-card group bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 flex flex-col overflow-hidden">
+        <!-- 카드 상단 배너 헤더 -->
+        <div class="p-6 pb-4 bg-gradient-to-br from-purple-50/70 via-white to-indigo-50/50 border-b border-slate-100">
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-purple-100 text-purple-700">
+              <i data-lucide="hash" class="w-3.5 h-3.5"></i> 수업 03
+            </span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 탐구 가능
+            </span>
+          </div>
+
+          <!-- 대표 아이콘 & 제목 -->
+          <div class="flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-xl bg-purple-600 text-white flex items-center justify-center text-2xl shadow-md shadow-purple-200 flex-shrink-0 group-hover:scale-110 transition-transform">
+              📊
+            </div>
+            <div>
+              <div class="text-xs font-medium text-purple-600">고등 확률과 통계 (정규분포)</div>
+              <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors leading-snug">
+                [통계] 정규분포와 표준편차 시뮬레이터
+              </h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- 본문 설명 -->
+        <div class="p-6 pt-4 flex-grow flex flex-col justify-between">
+          <div>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              평균(μ)과 표준편차(σ) 슬라이더를 움직이며 종 모양 곡선과 68-95-99.7% 구간을 탐구하고, <strong>500개 무작위 표본 난수 히스토그램</strong>을 곡선 위에 직접 오버레이해 봅니다.
+            </p>
+
+            <!-- 수학 개념 태그들 -->
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              <span class="px-2 py-1 rounded-md bg-purple-50 text-purple-700 text-xs font-semibold">📈 종 모양 곡선</span>
+              <span class="px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-semibold">🎲 500개 표본 추출</span>
+              <span class="px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">#68-95-99.7법칙</span>
+              <span class="px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">#평균과표준편차</span>
+            </div>
+          </div>
+
+          <!-- 링크 버튼 -->
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <a href="normal_distribution.html" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-brand-600 hover:bg-brand-700 text-white shadow-sm hover:shadow group-hover:shadow-brand-500/25 transition-all">
+              <span>탐구 시작하기</span>
+              <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- [카드 4: 준비중 카드] -->
+      <article data-category="geom" class="lesson-card relative bg-slate-50/80 rounded-2xl border border-dashed border-slate-300 shadow-sm flex flex-col overflow-hidden">
         <!-- 카드 상단 배너 헤더 -->
         <div class="p-6 pb-4 border-b border-slate-200/60">
           <div class="flex items-center justify-between mb-3">
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-slate-200 text-slate-600">
-              <i data-lucide="hash" class="w-3.5 h-3.5"></i> 수업 03
+              <i data-lucide="hash" class="w-3.5 h-3.5"></i> 수업 04
             </span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
               <i data-lucide="clock" class="w-3 h-3"></i> 오픈 준비 중
@@ -286,10 +339,10 @@
           <!-- 대표 아이콘 & 제목 -->
           <div class="flex items-start gap-3.5">
             <div class="w-12 h-12 rounded-xl bg-slate-300 text-slate-500 flex items-center justify-center text-2xl flex-shrink-0">
-              📊
+              🌀
             </div>
             <div>
-              <div class="text-xs font-medium text-slate-400">고등 수학 / 삼각비</div>
+              <div class="text-xs font-medium text-slate-400">고1 수학 / 삼각비</div>
               <h3 class="text-lg font-bold text-slate-600 leading-snug">
                 [해석] 삼각함수와 단위원 시뮬레이션
               </h3>

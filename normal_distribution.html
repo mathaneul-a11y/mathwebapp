@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[통계] 정규분포와 표준편차 시뮬레이터 | Math Lab Hub</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN (그래프 시각화 라이브러리) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Pretendard 한국어 웹폰트 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#EEF2FF',
+              100: '#E0E7FF',
+              200: '#C7D2FE',
+              300: '#A5B4FC',
+              400: '#818CF8',
+              500: '#6366F1',
+              600: '#4F46E5',
+              700: '#4338CA',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 수학 공책 은은한 격자 배경 */
+    .math-grid-bg {
+      background-color: #F8FAFC;
+      background-image: 
+        linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="math-grid-bg text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- ================= [공통 상단 고정 내비게이션 바 (Math Lab Hub)] ================= -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- 플랫폼 로고 (클릭 시 메인 로비 index.html로 복귀) -->
+      <a href="index.html" class="flex items-center gap-2.5 group flex-shrink-0" title="메인 로비로 이동">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+        </div>
+        <div>
+          <span class="text-base font-bold tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">
+            Math Lab Hub
+          </span>
+          <span class="text-xs text-slate-400 block -mt-1">중·고등 수학 플랫폼</span>
+        </div>
+      </a>
+
+      <!-- 현재 수업 위치 안내 (브레드크럼) -->
+      <div class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-medium truncate">
+        <span>단원: 확률과 통계</span>
+        <span class="text-slate-300">/</span>
+        <span class="bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded border border-indigo-200/60">
+          수업 03. 정규분포의 평균(μ)과 표준편차(σ)
+        </span>
+      </div>
+
+      <!-- 공통 이동 버튼: [← 이전 수업: 피타고라스] & [전체 수업 목록] -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- 이전 수업(피타고라스) 빠른 이동 버튼 -->
+        <a href="pythagoras.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors">
+          <span>←</span>
+          <span class="hidden sm:inline">이전: 피타고라스</span>
+          <span class="sm:hidden">이전</span>
+        </a>
+
+        <!-- 전체 수업 목록 버튼 -->
+        <a href="index.html" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-white bg-brand-600 hover:bg-brand-700 shadow-sm transition-all hover:translate-x-0.5">
+          <span>⊞</span>
+          <span class="hidden sm:inline">전체 수업 목록</span>
+          <span class="sm:hidden">목록</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= [메인 컨텐츠 워크스페이스] ================= -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+    
+    <!-- 1. 수업 개요 배너 -->
+    <section class="bg-gradient-to-r from-slate-900 via-indigo-950 to-brand-900 text-white p-5 sm:p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-brand-500/30 text-brand-200 border border-brand-400/30 backdrop-blur-sm">고등 확률과 통계</span>
+          <span class="text-xs text-indigo-200">연속확률분포 시뮬레이터</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight">정규분포 곡선의 형태와 표준편차의 비밀</h1>
+        <p class="text-xs sm:text-sm text-indigo-100/90 mt-1 max-w-2xl leading-relaxed">
+          평균(μ)을 바꾸면 곡선이 어디로 이동할까요? 표준편차(σ)를 늘리면 왜 가운데 높이가 낮아질까요? 슬라이더를 움직이며 <strong>종 모양 곡선(Bell Curve)</strong>과 <strong>68-95-99.7 법칙</strong>을 직접 확인해 보세요.
+        </p>
+      </div>
+
+      <!-- 정규분포 공식 배지 -->
+      <div class="bg-white/10 backdrop-blur-md px-5 py-3 rounded-xl border border-white/15 text-center flex-shrink-0 self-stretch md:self-auto shadow-inner">
+        <div class="text-xs text-indigo-200 font-medium">정규분포 기호</div>
+        <div class="text-2xl font-black text-cyan-300 font-mono tracking-wider mt-0.5" id="normDistSymbol">X ~ N(50, 10²)</div>
+      </div>
+    </section>
+
+    <!-- 2. 대시보드 그리드: 좌측 컨트롤러(4열) + 우측 정규분포 곡선 및 히스토그램 차트(8열) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- [좌측 패널: 슬라이더 컨트롤러 및 표본 생성 (4열)] -->
+      <aside class="lg:col-span-4 flex flex-col gap-5">
+        
+        <!-- 컨트롤러 카드 -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="text-brand-600">🎛️</span>
+              <span>모수(Parameter) 조절기</span>
+            </h2>
+            <button onclick="resetSliders()" class="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors">
+              <span>↺</span> 초기화
+            </button>
+          </div>
+
+          <!-- 평균 μ 슬라이더 -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label for="muSlider" class="font-bold text-indigo-700 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>
+                평균 (μ, 대칭축):
+              </label>
+              <span class="font-mono font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded text-sm" id="muValueText">50</span>
+            </div>
+            <input type="range" id="muSlider" min="20" max="80" step="1" value="50"
+              class="w-full h-2 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              oninput="onParamChange()">
+            <div class="flex justify-between text-[10px] text-slate-400 px-0.5">
+              <span>최소 20</span>
+              <span>중심 50</span>
+              <span>최대 80</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5 leading-tight">
+              💡 평균(μ)을 움직이면 곡선의 <strong>중심 대칭축</strong>이 좌우로 평행이동합니다.
+            </p>
+          </div>
+
+          <!-- 표준편차 σ 슬라이더 -->
+          <div class="space-y-1.5 pt-2 border-t border-slate-100">
+            <div class="flex justify-between items-center text-xs">
+              <label for="sigmaSlider" class="font-bold text-violet-700 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block"></span>
+                표준편차 (σ, 퍼진 정도):
+              </label>
+              <span class="font-mono font-black text-violet-700 bg-violet-50 px-2.5 py-0.5 rounded text-sm" id="sigmaValueText">10</span>
+            </div>
+            <input type="range" id="sigmaSlider" min="2" max="25" step="0.5" value="10"
+              class="w-full h-2 bg-violet-100 rounded-lg appearance-none cursor-pointer accent-violet-600"
+              oninput="onParamChange()">
+            <div class="flex justify-between text-[10px] text-slate-400 px-0.5">
+              <span>2 (뾰족함)</span>
+              <span>10 (기본)</span>
+              <span>25 (넓고 완만)</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5 leading-tight">
+              💡 표준편차(σ)가 작아지면 <strong>중앙이 뾰족</strong>해지고, 커지면 <strong>옆으로 넓고 완만</strong>해집니다.
+            </p>
+          </div>
+
+          <!-- 무작위 표본 시뮬레이션 섹션 -->
+          <div class="pt-4 border-t border-slate-100 space-y-3">
+            <label class="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <span>🎲</span> 실제 데이터 표본 추출 (난수 실험)
+            </label>
+            <p class="text-xs text-slate-500">
+              현재 설정된 μ, σ를 따르는 <strong>500개의 무작위 데이터</strong>를 실제로 뽑아 히스토그램으로 비교합니다.
+            </p>
+
+            <button id="btnSample500" onclick="generateSampleData(500)" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-95">
+              <span>📊 표본 데이터 500개 생성 및 오버레이</span>
+            </button>
+
+            <!-- 표본 통계 요약 뱃지 -->
+            <div id="sampleStatsBox" class="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-xs space-y-1 text-slate-700 hidden">
+              <div class="flex items-center justify-between font-semibold text-emerald-900">
+                <span>추출된 표본 수 (N):</span>
+                <span class="font-mono text-emerald-700" id="sampleCountDisplay">500개</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>표본 평균 (X̄):</span>
+                <span class="font-mono font-bold text-slate-900" id="sampleMeanDisplay">-</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>표본 표준편차 (s):</span>
+                <span class="font-mono font-bold text-slate-900" id="sampleStdDisplay">-</span>
+              </div>
+            </div>
+
+            <!-- 표본 히스토그램 숨기기/지우기 버튼 -->
+            <button id="btnClearSample" onclick="clearSampleData()" class="w-full py-1.5 text-slate-400 hover:text-slate-600 text-xs font-medium transition-colors hidden">
+              ✕ 히스토그램 막대 지우기
+            </button>
+          </div>
+
+        </div>
+
+        <!-- 68-95-99.7% 경험적 규칙 안내 카드 -->
+        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200/80 rounded-2xl p-5 shadow-sm space-y-3">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <span>📏</span> 정규분포의 68-95-99.7 법칙 (경험적 규칙)
+          </h3>
+
+          <div class="space-y-2 text-xs">
+            <!-- μ ± 1σ -->
+            <div class="flex items-center justify-between p-2 rounded-lg bg-indigo-500/15 border border-indigo-300/40">
+              <span class="font-bold text-indigo-900">μ ± 1σ 구간:</span>
+              <span class="font-mono font-bold text-indigo-700" id="range1Sigma">40.0 ~ 60.0 (약 68.3%)</span>
+            </div>
+            <!-- μ ± 2σ -->
+            <div class="flex items-center justify-between p-2 rounded-lg bg-violet-500/10 border border-violet-300/40">
+              <span class="font-bold text-violet-900">μ ± 2σ 구간:</span>
+              <span class="font-mono font-bold text-violet-700" id="range2Sigma">30.0 ~ 70.0 (약 95.4%)</span>
+            </div>
+            <!-- μ ± 3σ -->
+            <div class="flex items-center justify-between p-2 rounded-lg bg-purple-500/10 border border-purple-300/40">
+              <span class="font-bold text-purple-900">μ ± 3σ 구간:</span>
+              <span class="font-mono font-bold text-purple-700" id="range3Sigma">20.0 ~ 80.0 (약 99.7%)</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-snug">
+            정규분포에서는 평균과 표준편차의 값과 상관없이, <strong>μ ± 3σ 구간 안에 전체 데이터의 99.7%</strong>가 집중됩니다!
+          </p>
+        </div>
+
+      </aside>
+
+      <!-- [우측 패널: 정규분포 차트 캔버스 (8열)] -->
+      <section class="lg:col-span-8 flex flex-col gap-6">
+        
+        <!-- 메인 차트 카드 -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>정규분포 확률밀도함수 & 표본 히스토그램</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                종 모양 곡선의 전체 넓이는 항상 1(=100%)이며, μ ± kσ 구간의 색칠된 넓이가 곧 확률입니다.
+              </p>
+            </div>
+
+            <!-- 구간 색상 범례 (Legend) -->
+            <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+              <span class="inline-flex items-center gap-1 text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                <span class="w-2.5 h-2.5 rounded bg-indigo-500"></span> μ±1σ (68.3%)
+              </span>
+              <span class="inline-flex items-center gap-1 text-violet-700 bg-violet-50 px-2 py-0.5 rounded border border-violet-200">
+                <span class="w-2.5 h-2.5 rounded bg-violet-400"></span> μ±2σ (95.4%)
+              </span>
+              <span class="inline-flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                <span class="w-2.5 h-2.5 rounded bg-purple-300"></span> μ±3σ (99.7%)
+              </span>
+            </div>
+          </div>
+
+          <!-- Chart.js 캔버스 래퍼 -->
+          <div class="relative w-full h-[360px] sm:h-[420px] mt-4">
+            <canvas id="normalDistributionChart"></canvas>
+          </div>
+
+          <!-- 차트 하단 상태 캡션 안내 바 -->
+          <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-0.5 bg-rose-500 inline-block border-t-2 border-dashed border-rose-500"></span>
+              <span class="font-medium text-rose-700">빨간 점선: 평균 μ (대칭축)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded bg-emerald-500/40 border border-emerald-500 inline-block"></span>
+              <span class="font-medium text-emerald-800">초록 막대: 무작위 표본 500개 상대도수 히스토그램</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 수업용 생각 열기 & 탐구 질문 상자 (화면 하단) -->
+        <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                <span class="text-brand-600">💡</span> 수업용 생각 열기 & 깊이 탐구하기
+              </h3>
+              <p class="text-xs text-slate-500">정규분포 곡선의 성질을 관찰하고 아래 질문에 답해 보세요.</p>
+            </div>
+            <span class="px-2.5 py-1 text-xs font-semibold bg-brand-50 text-brand-700 rounded-lg border border-brand-200">
+              핵심 개념 질문
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            
+            <!-- [탐구 질문 Q1] -->
+            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200 flex flex-col justify-between hover:border-brand-200 transition">
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 bg-brand-600 text-white font-bold rounded text-xs">Q1</span>
+                  <h4 class="font-bold text-sm text-slate-800">
+                    "표준편차(σ)가 커지면 왜 가운데 높이는 낮아질까요?"
+                  </h4>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  슬라이더로 σ를 5에서 20으로 늘려보세요. 곡선의 폭은 넓어지는데, 왜 중앙(평균)의 꼭대기 높이는 점점 주저앉을까요?
+                </p>
+
+                <!-- 학생 메모 입력란 -->
+                <div class="pt-2">
+                  <label for="studentAnswer1" class="text-[11px] font-semibold text-slate-500 block mb-1">내 생각 적어보기:</label>
+                  <textarea id="studentAnswer1" rows="2" placeholder="자신의 생각을 적어보세요... (힌트: 넓이의 성질)" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white resize-none"></textarea>
+                </div>
+              </div>
+
+              <!-- 힌트 및 해설 아코디언 -->
+              <div class="mt-3 pt-3 border-t border-slate-200">
+                <button onclick="toggleHint('hintBox1', this)" class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center justify-between w-full">
+                  <span>🔍 힌트 및 수학적 원리 확인하기</span>
+                  <span class="toggle-icon text-slate-400">▼</span>
+                </button>
+                <div id="hintBox1" class="hidden mt-2 p-3 bg-white rounded-lg border border-brand-100 text-xs text-slate-700 space-y-1.5 shadow-sm">
+                  <p class="font-semibold text-brand-900">📌 해설 가이드 (전체 확률 = 1의 보존 법칙):</p>
+                  <p>정규분포 곡선 아래의 <strong>전체 넓이는 항상 1 (= 100%)</strong>로 고정되어 있습니다.</p>
+                  <p>표준편차(σ)가 커지면 데이터가 옆으로 넓게 퍼지게 되므로, 가로 폭이 넓어진 만큼 전체 넓이 1을 유지하기 위해 <strong>세로 높이(확률밀도 f(μ))가 줄어들 수밖에 없습니다.</strong> 마치 찰흙 덩어리를 옆으로 넓게 누르면 높이가 낮아지는 것과 같습니다!</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- [탐구 질문 Q2] -->
+            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200 flex flex-col justify-between hover:border-brand-200 transition">
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 bg-teal-600 text-white font-bold rounded text-xs">Q2</span>
+                  <h4 class="font-bold text-sm text-slate-800">
+                    "실제 500개 히스토그램은 왜 이론 곡선과 완전히 일치하지 않을까요?"
+                  </h4>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  ['표본 데이터 500개 생성'] 버튼을 여러 번 눌러보세요. 초록색 막대들의 꼭대기가 매끄러운 곡선과 살짝 울퉁불퉁 차이 나는 이유는 무엇일까요?
+                </p>
+
+                <!-- 학생 메모 입력란 -->
+                <div class="pt-2">
+                  <label for="studentAnswer2" class="text-[11px] font-semibold text-slate-500 block mb-1">내 생각 적어보기:</label>
+                  <textarea id="studentAnswer2" rows="2" placeholder="자신의 생각을 적어보세요... (힌트: 표본과 모집단)" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white resize-none"></textarea>
+                </div>
+              </div>
+
+              <!-- 힌트 및 해설 아코디언 -->
+              <div class="mt-3 pt-3 border-t border-slate-200">
+                <button onclick="toggleHint('hintBox2', this)" class="text-xs font-semibold text-teal-600 hover:text-teal-800 flex items-center justify-between w-full">
+                  <span>🔍 힌트 및 수학적 원리 확인하기</span>
+                  <span class="toggle-icon text-slate-400">▼</span>
+                </button>
+                <div id="hintBox2" class="hidden mt-2 p-3 bg-white rounded-lg border border-teal-100 text-xs text-slate-700 space-y-1.5 shadow-sm">
+                  <p class="font-semibold text-teal-900">📌 해설 가이드 (표본 오차와 대수의 법칙):</p>
+                  <p>이론적인 정규분포 곡선은 <strong>무한히 많은 시행</strong>을 가정했을 때의 수학적 확률밀도입니다.</p>
+                  <p>하지만 500개는 유한한 표본이므로 무작위성으로 인한 <strong>'표본 오차(Sampling Error)'</strong>가 자연스럽게 발생합니다. 표본의 수를 5,000개, 50,000개로 무수히 늘릴수록 히스토그램은 이론적인 종 모양 곡선에 점점 더 완벽하게 달라붙게 됩니다!</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ================= [하단 푸터] ================= -->
+  <footer class="mt-auto border-t border-slate-200 bg-white py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="font-bold text-slate-700 hover:text-brand-600">Math Lab Hub</a>
+        <span>| [수업 03] 정규분포의 평균과 표준편차 탐구</span>
+      </div>
+      <div>
+        <a href="index.html" class="text-brand-600 hover:underline font-semibold">← 전체 수업 목록으로 돌아가기</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= [자바스크립트 인터랙티브 로직] ================= -->
+  <script>
+    /**
+     * 정규분포 탐구 웹앱 메인 스크립트
+     * 1. 수학적 정규분포 확률밀도함수 f(x) 계산
+     * 2. Chart.js 복합 차트 (라인 곡선 + 히스토그램 막대) 렌더링
+     * 3. Chart.js 플러그인을 활용한 μ ± kσ 영역 및 평균 대칭축 시각화
+     * 4. 박스-뮬러 변환을 활용한 500개 정규분포 난수 표본 추출
+     */
+
+    // 1. 상태 변수 (Parameters)
+    let mu = 50;     // 평균 (기본값: 50)
+    let sigma = 10;  // 표준편차 (기본값: 10)
+    let sampleDataPoints = []; // 500개 난수 표본 배열
+    let chartInstance = null;  // Chart.js 인스턴스
+
+    // X축 데이터 범위: 0부터 100까지 0.5 간격 (총 201개 포인트)
+    const xMin = 0;
+    const xMax = 100;
+    const xStep = 0.5;
+    const xValues = [];
+    for (let x = xMin; x <= xMax; x += xStep) {
+      xValues.push(Number(x.toFixed(1)));
+    }
+
+    // 2. 정규분포 확률밀도함수(PDF) 공식 계산 함수
+    // f(x) = (1 / (σ * √(2π))) * exp( -0.5 * ((x - μ) / σ)^2 )
+    function normalPDF(x, mean, std) {
+      const coeff = 1 / (std * Math.sqrt(2 * Math.PI));
+      const exponent = -0.5 * Math.pow((x - mean) / std, 2);
+      return coeff * Math.exp(exponent);
+    }
+
+    // 3. 곡선 데이터 생성 함수
+    function getCurveData(mean, std) {
+      return xValues.map(x => normalPDF(x, mean, std));
+    }
+
+    // 4. Chart.js 커스텀 배경 플러그인 (μ ± 1σ, 2σ, 3σ 구간 배경색 및 평균 기준선 그리기)
+    const normalBandPlugin = {
+      id: 'normalBandPlugin',
+      beforeDraw(chart) {
+        const { ctx, chartArea: { top, bottom, height }, scales: { x, y } } = chart;
+        ctx.save();
+
+        // 픽셀 좌표 계산 보조 함수
+        const getXPixel = val => x.getPixelForValue(val);
+
+        const x1Left = Math.max(xMin, mu - sigma);
+        const x1Right = Math.min(xMax, mu + sigma);
+        const x2Left = Math.max(xMin, mu - 2 * sigma);
+        const x2Right = Math.min(xMax, mu + 2 * sigma);
+        const x3Left = Math.max(xMin, mu - 3 * sigma);
+        const x3Right = Math.min(xMax, mu + 3 * sigma);
+
+        // 1) μ ± 3σ 구간 (가장 은은한 보라: 약 99.7%)
+        const px3L = getXPixel(x3Left);
+        const px3R = getXPixel(x3Right);
+        ctx.fillStyle = 'rgba(196, 181, 253, 0.16)'; // purple-300
+        ctx.fillRect(px3L, top, px3R - px3L, height);
+
+        // 2) μ ± 2σ 구간 (중간 보라: 약 95.4%)
+        const px2L = getXPixel(x2Left);
+        const px2R = getXPixel(x2Right);
+        ctx.fillStyle = 'rgba(167, 139, 250, 0.22)'; // violet-400
+        ctx.fillRect(px2L, top, px2R - px2L, height);
+
+        // 3) μ ± 1σ 구간 (가장 진한 인디고: 약 68.3%)
+        const px1L = getXPixel(x1Left);
+        const px1R = getXPixel(x1Right);
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.28)'; // indigo-500
+        ctx.fillRect(px1L, top, px1R - px1L, height);
+
+        // 4) 중심 평균(μ) 세로선 표시 (빨간색 점선)
+        const pxMu = getXPixel(mu);
+        if (pxMu >= x.left && pxMu <= x.right) {
+          ctx.strokeStyle = '#EF4444'; // red-500
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 4]); // 점선
+          ctx.beginPath();
+          ctx.moveTo(pxMu, top);
+          ctx.lineTo(pxMu, bottom);
+          ctx.stroke();
+
+          // 평균 라벨 텍스트
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#DC2626';
+          ctx.font = 'bold 11px Pretendard, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`μ = ${mu}`, pxMu, top + 15);
+        }
+
+        ctx.restore();
+      }
+    };
+
+    // 5. Chart.js 차트 초기화
+    function initChart() {
+      const ctx = document.getElementById('normalDistributionChart').getContext('2d');
+
+      const curvePoints = getCurveData(mu, sigma);
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: xValues,
+          datasets: [
+            // [데이터셋 1: 이론적 정규분포 곡선]
+            {
+              label: '이론적 정규분포 곡선 f(x)',
+              data: curvePoints,
+              borderColor: '#4F46E5', // indigo-600
+              borderWidth: 2.5,
+              pointRadius: 0,
+              fill: false,
+              tension: 0.35,
+              order: 1 // 곡선이 막대 위에 그려지도록 설정
+            },
+            // [데이터셋 2: 표본 500개 히스토그램 막대 (초기엔 빈 배열)]
+            {
+              type: 'bar',
+              label: '표본 데이터 500개 상대도수 밀도',
+              data: new Array(xValues.length).fill(0),
+              backgroundColor: 'rgba(16, 185, 129, 0.45)', // emerald-500
+              borderColor: 'rgba(5, 150, 105, 0.9)',
+              borderWidth: 1,
+              barPercentage: 1.0,
+              categoryPercentage: 1.0,
+              order: 2,
+              hidden: true // 표본 생성 전엔 숨김
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                boxWidth: 14,
+                font: { family: 'Pretendard', size: 12, weight: '600' }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                title: items => `x = ${items[0].label}`,
+                label: item => {
+                  if (item.datasetIndex === 0) {
+                    return `곡선 확률밀도: ${item.raw.toFixed(4)}`;
+                  } else {
+                    return `히스토그램 밀도: ${item.raw.toFixed(4)}`;
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '변량 (x)',
+                font: { family: 'Pretendard', size: 12, weight: 'bold' }
+              },
+              ticks: {
+                callback: function(val, index) {
+                  // 10단위로만 라벨 출력하여 깔끔한 축 구성
+                  const xVal = xValues[index];
+                  return xVal % 10 === 0 ? xVal : '';
+                }
+              },
+              grid: { color: 'rgba(226, 232, 240, 0.7)' }
+            },
+            y: {
+              title: {
+                display: true,
+                text: '확률밀도 f(x)',
+                font: { family: 'Pretendard', size: 12, weight: 'bold' }
+              },
+              min: 0,
+              // 표준편차에 따라 y축 상한을 자동 조정
+              suggestedMax: 0.08,
+              grid: { color: 'rgba(226, 232, 240, 0.7)' }
+            }
+          }
+        },
+        plugins: [normalBandPlugin]
+      });
+    }
+
+    // 6. 슬라이더 조작 시 실시간 갱신 핸들러
+    function onParamChange() {
+      mu = parseFloat(document.getElementById('muSlider').value);
+      sigma = parseFloat(document.getElementById('sigmaSlider').value);
+
+      // 상단 및 요약 UI 텍스트 업데이트
+      document.getElementById('muValueText').innerText = mu;
+      document.getElementById('sigmaValueText').innerText = sigma;
+      document.getElementById('normDistSymbol').innerText = `X ~ N(${mu}, ${sigma}²)`;
+
+      // 68-95-99.7 구간 계산
+      const r1L = (mu - sigma).toFixed(1);
+      const r1R = (mu + sigma).toFixed(1);
+      const r2L = (mu - 2 * sigma).toFixed(1);
+      const r2R = (mu + 2 * sigma).toFixed(1);
+      const r3L = (mu - 3 * sigma).toFixed(1);
+      const r3R = (mu + 3 * sigma).toFixed(1);
+
+      document.getElementById('range1Sigma').innerText = `${r1L} ~ ${r1R} (약 68.3%)`;
+      document.getElementById('range2Sigma').innerText = `${r2L} ~ ${r2R} (약 95.4%)`;
+      document.getElementById('range3Sigma').innerText = `${r3L} ~ ${r3R} (약 99.7%)`;
+
+      // 곡선 데이터 재계산
+      const newCurve = getCurveData(mu, sigma);
+      chartInstance.data.datasets[0].data = newCurve;
+
+      // 표준편차에 맞추어 y축 최댓값 적응형 조정
+      const peak = normalPDF(mu, mu, sigma);
+      chartInstance.options.scales.y.suggestedMax = peak * 1.15;
+
+      // 만약 기존에 생성된 표본이 있다면, 현재 모수에 맞추어 재계산하거나 유지
+      if (sampleDataPoints.length > 0) {
+        updateHistogramData();
+      }
+
+      chartInstance.update();
+    }
+
+    // 7. 슬라이더 초기화
+    function resetSliders() {
+      document.getElementById('muSlider').value = 50;
+      document.getElementById('sigmaSlider').value = 10;
+      clearSampleData();
+      onParamChange();
+    }
+
+    // 8. 박스-뮬러 변환(Box-Muller Transform)을 이용한 정규분포 난수 생성
+    function randomNormal(mean, std) {
+      let u = 0, v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      // 표준정규분포 Z 계산
+      const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+      return mean + z * std;
+    }
+
+    // 9. 표본 500개 무작위 생성 및 히스토그램 막대 계산
+    function generateSampleData(count) {
+      sampleDataPoints = [];
+      let sum = 0;
+
+      // 500개의 난수 생성
+      for (let i = 0; i < count; i++) {
+        const val = randomNormal(mu, sigma);
+        sampleDataPoints.push(val);
+        sum += val;
+      }
+
+      // 표본 평균 및 표본 표준편차 계산
+      const sampleMean = sum / count;
+      let varianceSum = 0;
+      for (let i = 0; i < count; i++) {
+        varianceSum += Math.pow(sampleDataPoints[i] - sampleMean, 2);
+      }
+      const sampleStd = Math.sqrt(varianceSum / (count - 1));
+
+      // 표본 통계 UI 표시
+      document.getElementById('sampleStatsBox').classList.remove('hidden');
+      document.getElementById('btnClearSample').classList.remove('hidden');
+      document.getElementById('sampleCountDisplay').innerText = `${count}개`;
+      document.getElementById('sampleMeanDisplay').innerText = sampleMean.toFixed(2);
+      document.getElementById('sampleStdDisplay').innerText = sampleStd.toFixed(2);
+
+      updateHistogramData();
+      chartInstance.update();
+    }
+
+    // 10. 생성된 표본을 xValues 빈(Bin)에 매핑하여 상대도수 밀도 계산
+    function updateHistogramData() {
+      if (sampleDataPoints.length === 0) return;
+
+      const n = sampleDataPoints.length;
+      const binWidth = xStep; // 0.5 간격
+      const bins = new Array(xValues.length).fill(0);
+
+      // 각 표본이 속하는 가장 가까운 xValues 인덱스 찾기
+      sampleDataPoints.forEach(val => {
+        if (val >= xMin && val <= xMax) {
+          const index = Math.round((val - xMin) / binWidth);
+          if (index >= 0 && index < bins.length) {
+            bins[index]++;
+          }
+        }
+      });
+
+      // 도수를 '확률밀도(Density)' 단위로 정규화: 면적의 합이 1이 되도록 변환
+      // 밀도 = 빈의 개수 / (총 표본 수 * binWidth)
+      const densityData = bins.map(count => count / (n * binWidth));
+
+      chartInstance.data.datasets[1].data = densityData;
+      chartInstance.data.datasets[1].hidden = false;
+    }
+
+    // 11. 표본 데이터 지우기
+    function clearSampleData() {
+      sampleDataPoints = [];
+      document.getElementById('sampleStatsBox').classList.add('hidden');
+      document.getElementById('btnClearSample').classList.add('hidden');
+      if (chartInstance && chartInstance.data.datasets[1]) {
+        chartInstance.data.datasets[1].data = new Array(xValues.length).fill(0);
+        chartInstance.data.datasets[1].hidden = true;
+        chartInstance.update();
+      }
+    }
+
+    // 12. 힌트 토글 아코디언 핸들러
+    function toggleHint(hintId, btnElement) {
+      const hintEl = document.getElementById(hintId);
+      const iconEl = btnElement.querySelector('.toggle-icon');
+      if (hintEl.classList.contains('hidden')) {
+        hintEl.classList.remove('hidden');
+        if (iconEl) iconEl.innerText = '▲';
+      } else {
+        hintEl.classList.add('hidden');
+        if (iconEl) iconEl.innerText = '▼';
+      }
+    }
+
+    // 페이지 로드 시 차트 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      onParamChange();
+    });
+  </script>
+
+</body>
+</html>
