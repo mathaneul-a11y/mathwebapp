@@ -1,0 +1,700 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정비례 그래프 실험실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF8F2;
+    --paper-grid: rgba(36,48,74,0.055);
+    --ink:#24304A;
+    --ink-soft:#5A6478;
+    --line:#D9DEE7;
+    --teal:#2F8F80;
+    --teal-soft:#E4F1EE;
+    --coral:#E2572B;
+    --coral-soft:#FCEAE3;
+    --gold:#C08A1E;
+    --gold-soft:#F7EFD9;
+    --white:#FFFFFF;
+    --danger:#C43D3D;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--paper-grid) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px) 0 0/28px 28px,
+      var(--paper);
+    font-family:'Noto Sans KR', -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .app{max-width:920px;margin:0 auto;}
+
+  /* ---------- Header / Stepper ---------- */
+  .app-header{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:14px;
+    margin-bottom:22px;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand h1{
+    font-family:'Space Grotesk', 'Noto Sans KR', sans-serif;
+    font-size:22px; font-weight:700; margin:0; letter-spacing:-0.01em;
+  }
+  .brand span.tag{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink-soft);
+    background:var(--white); border:1px solid var(--line); padding:2px 8px; border-radius:20px;
+  }
+  .stepper{display:flex; align-items:center; gap:6px;}
+  .step{
+    display:flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:50%;
+    font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:600;
+    background:var(--white); border:1.5px solid var(--line); color:var(--ink-soft);
+    transition:all .25s ease;
+  }
+  .step.done{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .step.current{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .step-sep{width:16px; height:1.5px; background:var(--line);}
+  .step-sep.done{background:var(--teal);}
+
+  /* ---------- Card shell ---------- */
+  .screen{display:none;}
+  .screen.active{display:block; animation:fadeUp .35s ease;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:26px;
+    box-shadow: 0 1px 0 rgba(36,48,74,0.03), 0 12px 28px -18px rgba(36,48,74,0.25);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:600;
+    color:var(--teal); text-transform:uppercase; letter-spacing:.06em; margin:0 0 6px;
+  }
+  h2{font-size:20px; margin:0 0 4px; letter-spacing:-0.01em;}
+  p.desc{color:var(--ink-soft); font-size:14.5px; line-height:1.6; margin:0 0 20px;}
+
+  /* ---------- Input screen ---------- */
+  .eq-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;}
+  .eq-label{font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:600; color:var(--ink);}
+  input[type="number"]{
+    font-family:'JetBrains Mono', monospace; font-size:18px; font-weight:600;
+    width:110px; padding:10px 12px; border:1.5px solid var(--line); border-radius:10px;
+    color:var(--ink); background:var(--paper); outline:none; transition:border-color .2s;
+  }
+  input[type="number"]:focus{border-color:var(--teal);}
+  .eq-preview{
+    font-family:'Space Grotesk', sans-serif; font-size:20px; font-weight:600;
+    color:var(--teal); background:var(--teal-soft); padding:8px 16px; border-radius:10px;
+    min-width:100px; text-align:center;
+  }
+  .field-msg{font-size:13px; color:var(--danger); min-height:18px; margin-top:8px;}
+
+  .btn{
+    font-family:'Noto Sans KR', sans-serif; font-weight:700; font-size:14.5px;
+    padding:12px 22px; border-radius:10px; border:none; cursor:pointer;
+    transition: transform .12s ease, box-shadow .12s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--ink); color:#fff;}
+  .btn-primary:hover{background:#182238;}
+  .btn-primary:disabled{background:var(--line); color:var(--ink-soft); cursor:not-allowed;}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border:1.5px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--ink-soft); color:var(--ink);}
+
+  /* ---------- Explore screen ---------- */
+  .explore-grid{display:grid; grid-template-columns:260px 1fr; gap:22px;}
+  @media (max-width:720px){ .explore-grid{grid-template-columns:1fr;} }
+
+  .panel-block{margin-bottom:22px;}
+  .panel-block h3{
+    font-family:'Space Grotesk',sans-serif; font-size:13px; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin:0 0 10px;
+  }
+
+  /* signature: density ruler */
+  .ruler-wrap{
+    background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:14px 14px 10px;
+  }
+  .ruler-strip{
+    display:flex; align-items:flex-end; height:46px; gap:2px; margin-bottom:6px;
+  }
+  .ruler-bar{
+    flex:1; background:var(--line); border-radius:2px 2px 0 0; height:8px;
+    transition: height .25s ease, background .25s ease;
+  }
+  .ruler-bar.active{background:var(--teal); height:38px;}
+  .ruler-caption{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft); text-align:center;}
+
+  input[type="range"]{
+    width:100%; margin:14px 0 6px; -webkit-appearance:none; appearance:none;
+    height:4px; border-radius:2px; background:var(--line); outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%;
+    background:var(--teal); border:3px solid #fff; box-shadow:0 0 0 1.5px var(--teal); cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:14px; height:14px; border-radius:50%; background:var(--teal); border:3px solid #fff;
+    box-shadow:0 0 0 1.5px var(--teal); cursor:pointer;
+  }
+  .interval-readout{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--ink-soft); margin-top:2px;
+  }
+  .interval-readout b{color:var(--ink); font-size:15px;}
+  .interval-ticks{display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-soft); font-family:'JetBrains Mono',monospace; margin-top:4px;}
+
+  .hint-box{
+    font-size:13px; line-height:1.55; color:var(--ink-soft); background:var(--paper);
+    border:1px dashed var(--line); border-radius:10px; padding:10px 12px; margin-top:16px;
+  }
+  .hint-box.ready{background:var(--teal-soft); border:1px solid var(--teal); color:#1F6A5E; font-weight:500;}
+
+  .plane-wrap{background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:12px;}
+  svg{display:block; width:100%; height:auto;}
+
+  .save-row{display:flex; justify-content:flex-end; margin-top:16px; gap:10px;}
+
+  /* ---------- Checklist screen ---------- */
+  .thumb-row{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;}
+  .thumb{flex:1; min-width:160px; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px;}
+  .thumb-label{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; text-align:center; margin-top:6px;}
+
+  .check-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px;}
+  .check-item{
+    display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:10px; cursor:pointer;
+    border:1px solid transparent; transition:background .15s ease;
+  }
+  .check-item:hover{background:var(--paper);}
+  .check-item input{width:18px; height:18px; accent-color:var(--teal); flex-shrink:0; cursor:pointer;}
+  .check-item label{font-size:14.5px; cursor:pointer; flex:1;}
+  .check-item.correct{background:var(--teal-soft); border-color:var(--teal);}
+  .check-item.wrong{background:var(--coral-soft); border-color:var(--coral);}
+  .check-item .mark{font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; width:18px; text-align:center;}
+  .check-item.correct .mark{color:var(--teal);}
+  .check-item.wrong .mark{color:var(--coral);}
+
+  .result-banner{
+    margin-top:18px; padding:14px 16px; border-radius:10px; font-size:14px; line-height:1.6;
+    background:var(--gold-soft); border:1px solid var(--gold); color:#7A5A0F; display:none;
+  }
+  .result-banner.show{display:block;}
+
+  .footer-row{display:flex; justify-content:space-between; align-items:center; margin-top:22px;}
+  .reset-link{font-size:12.5px; color:var(--ink-soft); background:none; border:none; text-decoration:underline; cursor:pointer; padding:4px;}
+</style>
+</head>
+<body>
+  <!-- ================= [공통 상단 고정 내비게이션 바 (Math Lab Hub)] ================= -->
+  <header style="position:sticky; top:0; z-index:9999; background:rgba(255,255,255,0.95); backdrop-filter:blur(8px); border-bottom:1px solid #E2E8F0; padding:10px 20px; margin:-28px -16px 20px -16px; box-shadow:0 1px 3px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:space-between; gap:12px; font-family:'Noto Sans KR', sans-serif;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a href="index.html" style="text-decoration:none; display:flex; align-items:center; gap:8px;">
+        <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg, #4F46E5, #818CF8); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px;">M</div>
+        <div>
+          <span style="font-weight:bold; color:#1E293B; font-size:15px; display:block;">Math Lab Hub</span>
+          <span style="font-size:11px; color:#64748B; display:block; margin-top:-2px;">중·고등 수학 플랫폼</span>
+        </div>
+      </a>
+      <span style="font-size:11px; background:#EEF2FF; color:#4F46E5; padding:3px 8px; border-radius:6px; font-weight:600; border:1px solid #C7D2FE;">수업 04. 정비례 그래프 실험실</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <a href="index.html" style="text-decoration:none; font-size:12px; font-weight:600; color:#475569; background:#F1F5F9; padding:6px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:4px; border:1px solid #E2E8F0;">
+        <span>⊞</span> 전체 수업 목록
+      </a>
+    </div>
+  </header>
+
+<div class="app">
+
+  <div class="app-header">
+    <div class="brand">
+      <h1>정비례 그래프 실험실</h1>
+      <span class="tag">y = ax</span>
+    </div>
+    <div class="stepper" id="stepper"></div>
+  </div>
+
+  <!-- SCREEN 1: 함수식 입력 -->
+  <div class="screen" id="screen-input">
+    <div class="card">
+      <p class="eyebrow" id="input-eyebrow">그래프 1 / 3</p>
+      <h2>정비례 함수식을 입력하세요</h2>
+      <p class="desc">y = ax 꼴의 식에서 a 값을 정해봅시다. a는 -5 ~ 5 사이의 값(0 제외)을 사용할 수 있어요.</p>
+
+      <div class="eq-row">
+        <span class="eq-label">y =</span>
+        <input type="number" id="a-input" step="0.1" min="-5" max="5" placeholder="예: 2">
+        <span class="eq-label">x</span>
+        <span class="eq-preview" id="eq-preview">y = ax</span>
+      </div>
+      <div class="field-msg" id="a-msg"></div>
+
+      <div class="save-row">
+        <button class="btn btn-primary" id="start-btn">그래프 그리기 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: 그래프 관찰 -->
+  <div class="screen" id="screen-explore">
+    <div class="card">
+      <p class="eyebrow" id="explore-eyebrow">그래프 1 / 3</p>
+      <h2 id="explore-title">y = 2x 그래프 관찰하기</h2>
+      <p class="desc">슬라이더를 움직여 x 간격을 좁혀보세요. 점들이 어떻게 변하는지 살펴봅니다.</p>
+
+      <div class="explore-grid">
+        <div class="panel">
+          <div class="panel-block">
+            <h3>x 간격 자</h3>
+            <div class="ruler-wrap">
+              <div class="ruler-strip" id="ruler-strip"></div>
+              <div class="ruler-caption">0 부터 2 까지 점이 찍히는 위치</div>
+            </div>
+          </div>
+
+          <div class="panel-block">
+            <h3>간격 조절 슬라이더</h3>
+            <input type="range" id="interval-slider" min="0" max="4" step="1" value="0">
+            <div class="interval-readout">현재 x 간격 <b id="interval-value">2</b></div>
+            <div class="interval-ticks"><span>2</span><span>1</span><span>0.5</span><span>0.2</span><span>0.1</span></div>
+            <div class="hint-box" id="save-hint">가장 촘촘한 간격(0.1)까지 슬라이더를 옮기면 저장할 수 있어요.</div>
+          </div>
+        </div>
+
+        <div class="plane-wrap">
+          <svg id="plane" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+
+      <div class="save-row">
+        <button class="btn btn-ghost" id="back-btn">식 다시 입력</button>
+        <button class="btn btn-primary" id="save-btn" disabled>이 그래프 저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: 공통점 체크리스트 -->
+  <div class="screen" id="screen-checklist">
+    <div class="card">
+      <p class="eyebrow">마지막 단계</p>
+      <h2>세 그래프의 공통점 찾기</h2>
+      <p class="desc">지금까지 그린 세 개의 정비례 그래프예요. 공통으로 나타나는 성질에 체크해보세요.</p>
+
+      <div class="thumb-row" id="thumb-row"></div>
+
+      <ul class="check-list" id="check-list"></ul>
+
+      <div class="save-row" style="justify-content:space-between; align-items:center;">
+        <button class="btn btn-ghost" id="restart-btn">처음부터 다시하기</button>
+        <button class="btn btn-primary" id="verify-btn">확인하기</button>
+      </div>
+
+      <div class="result-banner" id="result-banner"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const PALETTE = [
+    {name:'teal', main:'#2F8F80', soft:'#E4F1EE'},
+    {name:'coral', main:'#E2572B', soft:'#FCEAE3'},
+    {name:'gold', main:'#C08A1E', soft:'#F7EFD9'}
+  ];
+  const INTERVALS = [2, 1, 0.5, 0.2, 0.1];
+  const DOMAIN = 10; // -10..10 on both axes
+  const SVG_SIZE = 340, PAD = 30;
+  const scale = (SVG_SIZE - 2*PAD) / (2*DOMAIN);
+
+  let state = {
+    round: 1,               // 1,2,3
+    currentA: null,
+    intervalIndex: 0,
+    saved: [],               // [{a, color}]
+    checklistAttempt: 0
+  };
+
+  // ---------- DOM refs ----------
+  const $ = id => document.getElementById(id);
+  const screens = {
+    input: $('screen-input'),
+    explore: $('screen-explore'),
+    checklist: $('screen-checklist')
+  };
+  const stepperEl = $('stepper');
+
+  function showScreen(name){
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+    renderStepper();
+  }
+
+  function renderStepper(){
+    let parts = [];
+    for(let i=1;i<=3;i++){
+      let cls = 'step';
+      if(state.saved.length >= i) cls += ' done';
+      else if(state.round === i && screens.explore.classList.contains('active') || (state.round===i && screens.input.classList.contains('active'))) cls += ' current';
+      parts.push(`<div class="${cls}">${i}</div>`);
+      if(i<3) parts.push(`<div class="step-sep ${state.saved.length>=i?'done':''}"></div>`);
+    }
+    parts.push(`<div class="step-sep ${state.saved.length>=3?'done':''}"></div>`);
+    let checkCls = 'step' + (screens.checklist.classList.contains('active') ? ' current' : (state.saved.length>=3?' done':''));
+    parts.push(`<div class="${checkCls}">✓</div>`);
+    stepperEl.innerHTML = parts.join('');
+  }
+
+  // ---------- Format helpers ----------
+  function trimNum(n){ return (Math.round(n*100)/100).toString(); }
+  function formatEq(a){
+    const sign = a < 0 ? '-' : '';
+    const abs = Math.abs(a);
+    const coeff = abs === 1 ? '' : trimNum(abs);
+    return `y = ${sign}${coeff}x`;
+  }
+
+  // ---------- SCREEN 1: input ----------
+  const aInput = $('a-input');
+  const eqPreview = $('eq-preview');
+  const aMsg = $('a-msg');
+  const startBtn = $('start-btn');
+  const inputEyebrow = $('input-eyebrow');
+
+  function updatePreview(){
+    const v = parseFloat(aInput.value);
+    if(isNaN(v)){ eqPreview.textContent = 'y = ax'; }
+    else{ eqPreview.textContent = formatEq(v); }
+    aMsg.textContent = '';
+  }
+  aInput.addEventListener('input', updatePreview);
+
+  function validateA(){
+    const v = parseFloat(aInput.value);
+    if(isNaN(v)){ aMsg.textContent = 'a 값을 입력해주세요.'; return null; }
+    if(v === 0){ aMsg.textContent = 'a는 0이 될 수 없어요. (y=0은 정비례 그래프가 아니에요)'; return null; }
+    if(Math.abs(v) > 5){ aMsg.textContent = 'a는 -5에서 5 사이의 값으로 입력해주세요.'; return null; }
+    aMsg.textContent = '';
+    return v;
+  }
+
+  function signsAllSame(arr){
+    return arr.every(v => v > 0) || arr.every(v => v < 0);
+  }
+
+  startBtn.addEventListener('click', () => {
+    const v = validateA();
+    if(v === null) return;
+    if(state.round === 3){
+      const all = [...state.saved.map(g => g.a), v];
+      if(signsAllSame(all)){
+        aMsg.textContent = 'a값이 음수/양수인 경우를 적어볼까요? 세 그래프의 기울기 부호가 모두 같으면 다음 단계로 넘어갈 수 없어요.';
+        return;
+      }
+    }
+    state.currentA = v;
+    state.intervalIndex = 0;
+    enterExplore();
+  });
+
+  function resetInputScreen(){
+    aInput.value = '';
+    eqPreview.textContent = 'y = ax';
+    aMsg.textContent = '';
+    inputEyebrow.textContent = `그래프 ${state.round} / 3`;
+  }
+
+  // ---------- SCREEN 2: explore ----------
+  const rulerStrip = $('ruler-strip');
+  const intervalSlider = $('interval-slider');
+  const intervalValue = $('interval-value');
+  const saveHint = $('save-hint');
+  const saveBtn = $('save-btn');
+  const backBtn = $('back-btn');
+  const exploreTitle = $('explore-title');
+  const exploreEyebrow = $('explore-eyebrow');
+  const planeSvg = $('plane');
+
+  // build 21 ruler bars representing x = 0.0 .. 2.0 step 0.1
+  function buildRuler(){
+    rulerStrip.innerHTML = '';
+    for(let i=0;i<=20;i++){
+      const bar = document.createElement('div');
+      bar.className = 'ruler-bar';
+      bar.dataset.x = (i*0.1).toFixed(1);
+      rulerStrip.appendChild(bar);
+    }
+  }
+  buildRuler();
+
+  function updateRuler(interval){
+    const bars = rulerStrip.children;
+    for(let i=0;i<bars.length;i++){
+      const x = parseFloat(bars[i].dataset.x);
+      const ratio = x / interval;
+      const isActive = Math.abs(ratio - Math.round(ratio)) < 1e-6;
+      bars[i].classList.toggle('active', isActive);
+    }
+  }
+
+  function enterExplore(){
+    exploreEyebrow.textContent = `그래프 ${state.round} / 3`;
+    exploreTitle.textContent = `${formatEq(state.currentA)} 그래프 관찰하기`;
+    intervalSlider.value = 0;
+    state.intervalIndex = 0;
+    updateExploreView();
+    showScreen('explore');
+  }
+
+  intervalSlider.addEventListener('input', () => {
+    state.intervalIndex = parseInt(intervalSlider.value, 10);
+    updateExploreView();
+  });
+
+  function updateExploreView(){
+    const interval = INTERVALS[state.intervalIndex];
+    intervalValue.textContent = trimNum(interval);
+    updateRuler(interval);
+
+    const isFinest = state.intervalIndex === INTERVALS.length - 1;
+    saveBtn.disabled = !isFinest;
+    saveHint.classList.toggle('ready', isFinest);
+    saveHint.textContent = isFinest
+      ? '점들의 간격이 좁아지니 그래프의 모양을 추측할 수 있겠어요! 이제 저장할 수 있어요.'
+      : '가장 촘촘한 간격(0.1)까지 슬라이더를 옮기면 저장할 수 있어요.';
+
+    drawPlane(planeSvg, {
+      a: state.currentA,
+      interval: interval,
+      showLine: isFinest,
+      color: PALETTE[state.round-1].main,
+      points: true
+    });
+  }
+
+  backBtn.addEventListener('click', () => {
+    resetInputScreen();
+    showScreen('input');
+  });
+
+  saveBtn.addEventListener('click', () => {
+    state.saved.push({ a: state.currentA, color: PALETTE[state.saved.length].main });
+    if(state.saved.length < 3){
+      state.round += 1;
+      state.currentA = null;
+      resetInputScreen();
+      showScreen('input');
+    } else {
+      enterChecklist();
+    }
+  });
+
+  // ---------- SVG plane rendering ----------
+  function toSvgX(x){ return PAD + (x + DOMAIN) * scale; }
+  function toSvgY(y){ return PAD + (DOMAIN - y) * scale; }
+
+  function svgEl(tag, attrs){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  function lineEndpoints(a){
+    const candidates = [];
+    [-DOMAIN, DOMAIN].forEach(x => {
+      const y = a * x;
+      if(Math.abs(y) <= DOMAIN + 1e-9) candidates.push([x, y]);
+    });
+    [-DOMAIN, DOMAIN].forEach(y => {
+      const x = y / a;
+      if(Math.abs(x) <= DOMAIN + 1e-9) candidates.push([x, y]);
+    });
+    // dedupe near-identical points
+    const uniq = [];
+    candidates.forEach(c => {
+      if(!uniq.some(u => Math.abs(u[0]-c[0])<1e-6 && Math.abs(u[1]-c[1])<1e-6)) uniq.push(c);
+    });
+    // pick the two most separated points
+    let best = [uniq[0], uniq[1]], bestD = -1;
+    for(let i=0;i<uniq.length;i++){
+      for(let j=i+1;j<uniq.length;j++){
+        const d = Math.hypot(uniq[i][0]-uniq[j][0], uniq[i][1]-uniq[j][1]);
+        if(d > bestD){ bestD = d; best = [uniq[i], uniq[j]]; }
+      }
+    }
+    return best;
+  }
+
+  function drawPlane(svg, opts){
+    svg.innerHTML = '';
+    const g = svgEl('g', {});
+    svg.appendChild(g);
+
+    // grid
+    for(let i=-DOMAIN;i<=DOMAIN;i++){
+      if(i===0) continue;
+      g.appendChild(svgEl('line', {
+        x1: toSvgX(i), y1: toSvgY(-DOMAIN), x2: toSvgX(i), y2: toSvgY(DOMAIN),
+        stroke:'#E4E8F0', 'stroke-width':1
+      }));
+      g.appendChild(svgEl('line', {
+        x1: toSvgX(-DOMAIN), y1: toSvgY(i), x2: toSvgX(DOMAIN), y2: toSvgY(i),
+        stroke:'#E4E8F0', 'stroke-width':1
+      }));
+    }
+    // axis labels
+    [-10,-5,5,10].forEach(v => {
+      const t1 = svgEl('text', {x: toSvgX(v), y: toSvgY(0)+14, 'font-size':9, fill:'#8A93A6', 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace'});
+      t1.textContent = v; g.appendChild(t1);
+      const t2 = svgEl('text', {x: toSvgX(0)-8, y: toSvgY(v)+3, 'font-size':9, fill:'#8A93A6', 'text-anchor':'end', 'font-family':'JetBrains Mono, monospace'});
+      t2.textContent = v; g.appendChild(t2);
+    });
+    // axes
+    g.appendChild(svgEl('line', {x1:toSvgX(-DOMAIN), y1:toSvgY(0), x2:toSvgX(DOMAIN), y2:toSvgY(0), stroke:'#24304A', 'stroke-width':1.4}));
+    g.appendChild(svgEl('line', {x1:toSvgX(0), y1:toSvgY(-DOMAIN), x2:toSvgX(0), y2:toSvgY(DOMAIN), stroke:'#24304A', 'stroke-width':1.4}));
+
+    if(opts.showLine){
+      const [p1, p2] = lineEndpoints(opts.a);
+      const line = svgEl('line', {
+        x1: toSvgX(p1[0]), y1: toSvgY(p1[1]), x2: toSvgX(p2[0]), y2: toSvgY(p2[1]),
+        stroke: opts.color, 'stroke-width':2.5, opacity:0
+      });
+      g.appendChild(line);
+      requestAnimationFrame(()=>{ line.style.transition='opacity .4s ease'; line.setAttribute('opacity','0.9'); });
+    }
+
+    if(opts.points){
+      const interval = opts.interval;
+      const count = Math.round((2*DOMAIN)/interval);
+      for(let k=0;k<=count;k++){
+        let x = -DOMAIN + k*interval;
+        x = Math.round(x*1000)/1000;
+        const y = opts.a * x;
+        if(Math.abs(y) > DOMAIN + 1e-9) continue;
+        g.appendChild(svgEl('circle', {
+          cx: toSvgX(x), cy: toSvgY(y), r: 3.6, fill: opts.color
+        }));
+      }
+    }
+  }
+
+  // ---------- SCREEN 3: checklist ----------
+  const thumbRow = $('thumb-row');
+  const checkList = $('check-list');
+  const verifyBtn = $('verify-btn');
+  const resultBanner = $('result-banner');
+  const restartBtn = $('restart-btn');
+
+  const STATEMENTS = [
+    { id:'line', text:'그래프가 직선 모양이다.', test: () => true },
+    { id:'origin', text:'원점 (0, 0)을 지난다.', test: () => true },
+    { id:'parallel', text:'x축과 나란하다(평행하다).', test: () => false },
+    { id:'up', text:'오른쪽 위로 올라가는 모양이다.', test: (as) => as.every(a => a > 0) },
+    { id:'down', text:'오른쪽 아래로 내려가는 모양이다.', test: (as) => as.every(a => a < 0) },
+    { id:'increase', text:'x의 값이 커질수록 y의 값도 커진다.', test: (as) => as.every(a => a > 0) },
+    { id:'double', text:'x의 값이 2배, 3배가 되면 y의 값도 2배, 3배가 된다.', test: () => true }
+  ];
+
+  function enterChecklist(){
+    // thumbnails
+    thumbRow.innerHTML = '';
+    state.saved.forEach((g, idx) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'thumb';
+      const svg = svgEl('svg', {viewBox:'0 0 340 340', width:'100%', height:'auto'});
+      wrap.appendChild(svg);
+      const label = document.createElement('div');
+      label.className = 'thumb-label';
+      label.style.color = g.color;
+      label.textContent = formatEq(g.a);
+      wrap.appendChild(label);
+      thumbRow.appendChild(wrap);
+      drawPlane(svg, { a:g.a, interval:0.1, showLine:true, color:g.color, points:false });
+    });
+
+    // checklist
+    checkList.innerHTML = '';
+    STATEMENTS.forEach(st => {
+      const li = document.createElement('li');
+      li.className = 'check-item';
+      li.innerHTML = `
+        <span class="mark" data-mark></span>
+        <input type="checkbox" id="chk-${st.id}">
+        <label for="chk-${st.id}">${st.text}</label>
+      `;
+      checkList.appendChild(li);
+    });
+    resultBanner.classList.remove('show');
+    document.querySelectorAll('.check-item').forEach(el => { el.classList.remove('correct','wrong'); });
+    state.checklistAttempt = 0;
+    verifyBtn.textContent = '확인하기';
+
+    showScreen('checklist');
+  }
+
+  verifyBtn.addEventListener('click', () => {
+    state.checklistAttempt++;
+    const as = state.saved.map(g => g.a);
+    let correctCount = 0, userCorrect = 0;
+    const results = STATEMENTS.map(st => {
+      const isTrue = st.test(as);
+      const checked = $('chk-'+st.id).checked;
+      if(isTrue) correctCount++;
+      if(checked === isTrue) userCorrect++;
+      return { st, isTrue, checked, match: checked === isTrue };
+    });
+
+    const allCorrect = userCorrect === STATEMENTS.length;
+    const shouldReveal = allCorrect || state.checklistAttempt >= 2;
+
+    document.querySelectorAll('.check-item').forEach(el => el.classList.remove('correct','wrong'));
+
+    if(shouldReveal){
+      results.forEach(r => {
+        const item = $('chk-'+r.st.id).closest('.check-item');
+        const mark = item.querySelector('[data-mark]');
+        item.classList.add(r.match ? 'correct' : 'wrong');
+        mark.textContent = r.match ? '✓' : (r.isTrue ? '＋' : '－');
+      });
+    } else {
+      results.forEach(r => {
+        const item = $('chk-'+r.st.id).closest('.check-item');
+        item.querySelector('[data-mark]').textContent = '';
+      });
+    }
+
+    resultBanner.classList.add('show');
+    if(allCorrect){
+      resultBanner.textContent = `정확해요! 세 그래프 y=${as.map(a=>trimNum(a)).join('x, y=')}x 의 공통점 ${correctCount}가지를 모두 찾았어요.`;
+    } else if(shouldReveal){
+      resultBanner.textContent = `${STATEMENTS.length}개 중 ${userCorrect}개를 맞혔어요. 초록색으로 표시된 항목이 실제 공통점이에요. 세 그래프의 기울기 부호를 다시 살펴보세요.`;
+    } else {
+      resultBanner.textContent = `${STATEMENTS.length}개 중 ${userCorrect}개를 맞혔어요. 다시 골라볼까요?`;
+      verifyBtn.textContent = '다시 확인하기';
+    }
+  });
+
+  restartBtn.addEventListener('click', () => {
+    state = { round:1, currentA:null, intervalIndex:0, saved:[], checklistAttempt:0 };
+    verifyBtn.textContent = '확인하기';
+    resetInputScreen();
+    showScreen('input');
+  });
+
+  // ---------- init ----------
+  resetInputScreen();
+  showScreen('input');
+})();
+</script>
+</body>
+</html>
